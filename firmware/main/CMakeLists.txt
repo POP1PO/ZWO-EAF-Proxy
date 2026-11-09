@@ -2,6 +2,7 @@ idf_component_register(
     SRCS
         "main.cpp"
         "backends/simulated_focuser.cpp"
+        "backends/stepper_focuser.cpp"
         "personas/eaf_descriptors.cpp"
         "personas/eaf_protocol.cpp"
         "personas/eaf_persona.cpp"
@@ -10,4 +11,5 @@ idf_component_register(
     REQUIRES
         esp_driver_gpio
         esp_timer
+        nvs_flash
 )

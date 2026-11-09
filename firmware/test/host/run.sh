@@ -8,8 +8,11 @@ c++ $FLAGS test_descriptors.cpp $SRC/personas/eaf_descriptors.cpp -o /tmp/eaf_de
 c++ $FLAGS test_protocol.cpp    $SRC/personas/eaf_protocol.cpp    -o /tmp/eaf_proto_test
 c++ $FLAGS test_persona.cpp     $SRC/personas/eaf_persona.cpp $SRC/personas/eaf_protocol.cpp \
     -o /tmp/eaf_persona_test
+c++ $FLAGS test_stepper.cpp     -o /tmp/eaf_stepper_test
 /tmp/eaf_desc_test
 echo
 /tmp/eaf_proto_test
 echo
 /tmp/eaf_persona_test
+echo
+/tmp/eaf_stepper_test

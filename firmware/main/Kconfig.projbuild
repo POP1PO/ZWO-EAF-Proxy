@@ -35,5 +35,84 @@ menu "ZWO EAF persona"
     config EAF_TEMPERATURE_CENTI
         int "Reported temperature, in hundredths of a degree Celsius"
         default 2150
+        help
+            Used by the simulated backend, and as the fallback the persona
+            reports when a real backend cannot measure temperature.
+
+    choice EAF_BACKEND
+        prompt "Focuser backend"
+        default EAF_BACKEND_SIMULATED
+        help
+            Which focuser the persona drives. Simulated needs no hardware and is
+            how the persona is exercised against a host. The direct stepper is
+            the whole proxy on one board.
+
+        config EAF_BACKEND_SIMULATED
+            bool "Simulated (no hardware)"
+
+        config EAF_BACKEND_STEPPER
+            bool "Direct stepper on ULN2003 (28BYJ-48)"
+    endchoice
+
+    menu "Direct stepper backend"
+        visible if EAF_BACKEND_STEPPER
+
+        config EAF_STEPPER_IN1_GPIO
+            int "GPIO wired to ULN2003 IN1"
+            default 2
+        config EAF_STEPPER_IN2_GPIO
+            int "GPIO wired to ULN2003 IN2"
+            default 3
+        config EAF_STEPPER_IN3_GPIO
+            int "GPIO wired to ULN2003 IN3"
+            default 4
+        config EAF_STEPPER_IN4_GPIO
+            int "GPIO wired to ULN2003 IN4"
+            default 5
+            help
+                Enter the pins by their board silkscreen label. The firmware
+                reorders them to the activation order IN1, IN3, IN2, IN4 that a
+                28BYJ-48 needs; wired in label order the motor only buzzes. Avoid
+                the native-USB pins (GPIO19/20 on an ESP32-S3).
+
+        config EAF_STEPPER_MAX_STEPS
+            int "Travel, in half-steps"
+            default 60000
+            help
+                The configured end of travel for this scope. Targets are clamped
+                into [0, this]; the protocol carries no limit and an unclamped
+                move grinds the mechanism into its end stop. 60000 matches the
+                ASIAIR's own default maximum.
+
+        config EAF_STEPPER_RATE
+            int "Rate ceiling, in half-steps per second"
+            default 1000
+            help
+                1000 is about 15 rpm on a 28BYJ-48 and is HBG3's figure. A stall
+                is undetectable and loses position, so this is a real ceiling,
+                not advice.
+
+        config EAF_STEPPER_START
+            int "Start position when NVS holds nothing yet, in half-steps"
+            default 0
+
+        config EAF_STEPPER_INVERT
+            bool "Invert direction"
+            default n
+            help
+                Reverse which way the motor turns for a rising count, for a motor
+                wired or geared the other way. The ASIAIR's own Reverse toggle is
+                stored and echoed but not applied to the motor in this build, so
+                set direction here or by the motor connector.
+
+        config EAF_STEPPER_ZERO_GPIO
+            int "GPIO for an optional zero button (-1 to disable)"
+            default -1
+            help
+                Active-low button to ground, pulled up internally. Pressing it
+                sets the current position to 0, the same as the ASIAIR's zero. It
+                is refused while a move is running. Leave at -1 if unused.
+
+    endmenu
 
 endmenu

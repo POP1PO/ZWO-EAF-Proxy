@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "backends/simulated_focuser.h"
+#include "backends/stepper_focuser.h"
 #include "class/hid/hid_device.h"
 #include "esp_log.h"
 #include "esp_timer.h"
@@ -21,8 +22,31 @@ namespace {
 
 const char* kTag = "eaf";
 
+// Which focuser the persona drives is a build choice; see Kconfig.projbuild.
+// The simulated one needs no hardware; the stepper is the whole proxy on one
+// board. Everything above this line is identical for both.
+#if CONFIG_EAF_BACKEND_STEPPER
+#ifdef CONFIG_EAF_STEPPER_INVERT
+constexpr bool kStepperInvert = true;
+#else
+constexpr bool kStepperInvert = false;
+#endif
+constexpr StepperConfig kStepperConfig = {
+    .in1_gpio = CONFIG_EAF_STEPPER_IN1_GPIO,
+    .in2_gpio = CONFIG_EAF_STEPPER_IN2_GPIO,
+    .in3_gpio = CONFIG_EAF_STEPPER_IN3_GPIO,
+    .in4_gpio = CONFIG_EAF_STEPPER_IN4_GPIO,
+    .max_travel = CONFIG_EAF_STEPPER_MAX_STEPS,
+    .rate_sps = CONFIG_EAF_STEPPER_RATE,
+    .start_position = CONFIG_EAF_STEPPER_START,
+    .invert = kStepperInvert,
+    .zero_gpio = CONFIG_EAF_STEPPER_ZERO_GPIO,
+};
+StepperFocuser focuser(kStepperConfig);
+#else
 SimulatedFocuser focuser(CONFIG_EAF_START_POSITION, CONFIG_EAF_STEPS_PER_SECOND,
                          CONFIG_EAF_TEMPERATURE_CENTI);
+#endif
 
 // Register 0x0C, from CONFIG_EAF_SERIAL_HEX so no unit's serial is compiled in
 // from this repository. Malformed configuration leaves the body zeroed.
@@ -124,9 +148,21 @@ extern "C" void app_main(void) {
   };
 
   LoadSerial();
+  if (!focuser.begin()) {
+    ESP_LOGE(kTag, "focuser begin() failed; presenting anyway");
+  }
   ESP_ERROR_CHECK(tinyusb_driver_install(&config));
   ESP_LOGI(kTag, "presenting as ZWO EAF");
 
+#if CONFIG_EAF_BACKEND_STEPPER
+  // The stepper runs its own clock inside tick(). A short delay keeps the rate
+  // honest: at the 1000 half-steps/s ceiling one step falls due about every
+  // millisecond. USB is serviced by TinyUSB's own task, not this loop.
+  while (true) {
+    focuser.tick();
+    vTaskDelay(pdMS_TO_TICKS(1));
+  }
+#else
   // Integrate against the real clock. pdMS_TO_TICKS of anything under one
   // FreeRTOS tick rounds to zero, so a delay cannot be used to measure time.
   int64_t last_us = esp_timer_get_time();
@@ -139,4 +175,5 @@ extern "C" void app_main(void) {
     }
     vTaskDelay(pdMS_TO_TICKS(10));
   }
+#endif
 }
