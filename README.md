@@ -1,5 +1,7 @@
 # ZWO-EAF-Proxy
 
+> **Español:** [README.es.md](README.es.md) · build and wiring guide: [GUIA-ES.md](GUIA-ES.md)
+
 Makes a non-ZWO focuser appear to an ASIAIR as a ZWO EAF.
 
 A microcontroller enumerates on the ASIAIR's USB bus using the EAF's identity and
@@ -46,8 +48,9 @@ racking to the zero end and saying so.
 ## Status
 
 The EAF protocol is decoded and an ESP32-S3 emulating it is accepted and driven
-by a real ASIAIR. No focuser is attached yet: the emulator drives a simulated
-one, and the real backends are next.
+by a real ASIAIR. Upstream the emulator drives a simulated focuser; **this fork
+adds the direct-stepper backend** (ULN2003 + 28BYJ-48), code-complete and
+host-tested, with hardware validation still pending.
 
 - [x] Capture a real EAF talking to an ASIAIR (Cynthion, scripted via `zwoproxy capture`)
 - [x] Decode the transport: descriptors, HID report layout, control-transfer framing
@@ -55,7 +58,7 @@ one, and the real backends are next.
 - [x] Emulate the device on ESP32-S3 and get the ASIAIR to enumerate it
 - [x] ASIAIR drives it: firmware 3.8.2, model EAFN, serial, temperature, moves, halt
 - [x] Pinefeat retarget test: the pseudo-halt works, 11-12 steps against a 353-step envelope
-- [ ] Stepper backend on a ULN2003: first complete proxy, one board
+- [x] Stepper backend on a ULN2003: first complete proxy, one board — *code-complete, host-tested; hardware validation pending*
 - [ ] myFocuserPro2 host backend
 - [ ] Pinefeat backend (needs a second board for USB host, or a RP2040-based board)
 - [ ] Gemini backend
@@ -100,7 +103,8 @@ ASIAIR --USB--> EAF emulation --> Focuser iface --> Pinefeat / Gemini / myFP2
                 EFW emulation --> FilterWheel iface --> (a separate repo)
 ```
 
-The backend column is the plan. Only the simulated focuser is written.
+The backend column is the plan. The simulated focuser and the direct stepper are
+written; the rest is still ahead.
 
 The same interface exists twice: in firmware and in the Python host module. That
 lets the protocol be exercised without flashing anything.
@@ -127,11 +131,12 @@ lets the protocol be exercised without flashing anything.
 
 ## Target focusers
 
-None are written yet. The persona drives a simulated focuser today.
+The direct stepper is written (see [GUIA-ES.md](GUIA-ES.md) to build it); the
+rest below is the plan.
 
 | Backend | Where | Transport | Why this order |
 |---|---|---|---|
-| Stepper on a ULN2003 | firmware | four GPIO, no controller | **first**: the whole proxy on one board, already fitted to two scopes |
+| Stepper on a ULN2003 | firmware | four GPIO, no controller | **done**: the whole proxy on one board, already fitted to two scopes |
 | Pinefeat CEF | firmware | USB CDC, sealed case | **main target**: focus and aperture on a Canon EF lens |
 | Gemini EAF | firmware | sealed case, needs a USB host | equal target: the device that motivated the project |
 | myFocuserPro2 | host, then firmware | UART tap, DIY board | last by usefulness |
