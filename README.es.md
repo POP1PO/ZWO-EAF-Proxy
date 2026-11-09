@@ -2,6 +2,11 @@
 
 > Traducción al español del README. El original está en [README.md](README.md).
 > Guía de montaje y flasheo paso a paso en castellano: [GUIA-ES.md](GUIA-ES.md).
+>
+> **Experimental — se buscan colaboradores:** port a ESP32-P4 para mover un
+> enfocador Gemini por USB en una sola placa, en
+> [docs/esp32p4-port.es.md](docs/esp32p4-port.es.md). Andamiaje sin terminar: si
+> tienes una P4 y un Gemini, échale un ojo.
 
 Hace que un enfocador que no es de ZWO aparezca ante un ASIAIR como un ZWO EAF.
 

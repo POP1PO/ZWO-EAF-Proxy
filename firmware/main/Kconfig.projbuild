@@ -52,6 +52,16 @@ menu "ZWO EAF persona"
 
         config EAF_BACKEND_STEPPER
             bool "Direct stepper on ULN2003 (28BYJ-48)"
+
+        config EAF_BACKEND_GEMINI_USBH
+            bool "Gemini over USB host (ESP32-P4, EXPERIMENTAL, not implemented)"
+            depends on IDF_TARGET_ESP32P4
+            help
+                SCAFFOLD ONLY. Drives a Gemini focuser over USB host on the P4's
+                second OTG controller while the persona holds the first as a
+                device. The transport and the Gemini protocol are not written
+                yet; selecting this builds a stub that does not move a focuser.
+                See docs/esp32p4-port.md.
     endchoice
 
     menu "Direct stepper backend"

@@ -1,6 +1,10 @@
 # ZWO-EAF-Proxy
 
 > **Español:** [README.es.md](README.es.md) · build and wiring guide: [GUIA-ES.md](GUIA-ES.md)
+>
+> **Experimental — help wanted:** an ESP32-P4 port to drive a Gemini focuser over
+> USB on a single board — scaffold in [docs/esp32p4-port.md](docs/esp32p4-port.md).
+> It does not work yet; if you have a P4 and a Gemini, please take a look.
 
 Makes a non-ZWO focuser appear to an ASIAIR as a ZWO EAF.
 

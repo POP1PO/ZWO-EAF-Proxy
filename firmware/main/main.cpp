@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "backends/gemini_usbh_focuser.h"
 #include "backends/simulated_focuser.h"
 #include "backends/stepper_focuser.h"
 #include "class/hid/hid_device.h"
@@ -43,6 +44,10 @@ constexpr StepperConfig kStepperConfig = {
     .zero_gpio = CONFIG_EAF_STEPPER_ZERO_GPIO,
 };
 StepperFocuser focuser(kStepperConfig);
+#elif CONFIG_EAF_BACKEND_GEMINI_USBH
+// ESP32-P4 scaffold: a stub that does not move a focuser yet. See
+// docs/esp32p4-port.md.
+GeminiUsbhFocuser focuser;
 #else
 SimulatedFocuser focuser(CONFIG_EAF_START_POSITION, CONFIG_EAF_STEPS_PER_SECOND,
                          CONFIG_EAF_TEMPERATURE_CENTI);
@@ -154,10 +159,10 @@ extern "C" void app_main(void) {
   ESP_ERROR_CHECK(tinyusb_driver_install(&config));
   ESP_LOGI(kTag, "presenting as ZWO EAF");
 
-#if CONFIG_EAF_BACKEND_STEPPER
-  // The stepper runs its own clock inside tick(). A short delay keeps the rate
-  // honest: at the 1000 half-steps/s ceiling one step falls due about every
-  // millisecond. USB is serviced by TinyUSB's own task, not this loop.
+#if CONFIG_EAF_BACKEND_STEPPER || CONFIG_EAF_BACKEND_GEMINI_USBH
+  // Hardware backends drive their own state machine inside tick(). A short delay
+  // keeps the stepper's rate honest (one half-step falls due about every
+  // millisecond at the ceiling). USB is serviced by TinyUSB's own task.
   while (true) {
     focuser.tick();
     vTaskDelay(pdMS_TO_TICKS(1));
