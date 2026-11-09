@@ -1,0 +1,13 @@
+{
+  "name": "ZWO EAF Proxy",
+  "version": "0.1.0-sim",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "zwoproxy-merged.bin", "offset": 0 }
+      ]
+    }
+  ]
+}

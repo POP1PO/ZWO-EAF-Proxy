@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZWO EAF Proxy — Instalador</title>
+  <style>
+    :root {
+      --bg: #0e1726;
+      --card: #16223a;
+      --ink: #e8eef8;
+      --muted: #9fb0c8;
+      --line: #263650;
+      --accent: #5aa0ff;
+      --warn-bg: #3a2a12;
+      --warn-ink: #ffd8a6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+    }
+    h1 { font-size: 1.5rem; margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 20px; }
+    .install { text-align: center; margin: 24px 0; }
+    esp-web-install-button { --esp-tools-button-color: var(--accent); }
+    .warn {
+      background: var(--warn-bg);
+      color: var(--warn-ink);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.92rem;
+      margin: 18px 0;
+    }
+    ol { padding-left: 20px; }
+    ol li { margin: 6px 0; }
+    .req { color: var(--muted); font-size: 0.92rem; }
+    code { background: #0c1422; padding: 1px 6px; border-radius: 6px; }
+    footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>ZWO EAF Proxy</h1>
+    <p class="sub">Graba el firmware en tu placa ESP32-S3 desde el navegador, sin instalar nada.</p>
+
+    <div class="install">
+      <esp-web-install-button manifest="./manifest.json">
+        <span slot="unsupported">
+          Tu navegador no permite grabar por USB. Abre esta página en
+          <strong>Chrome</strong> o <strong>Edge</strong> en un ordenador.
+        </span>
+        <span slot="not-allowed">
+          Acceso al puerto denegado. Conecta la placa y vuelve a intentarlo.
+        </span>
+      </esp-web-install-button>
+    </div>
+
+    <p class="req">Necesitas <strong>Chrome</strong> o <strong>Edge</strong> en un ordenador (no funciona en Firefox, Safari ni en el móvil).</p>
+
+    <h3>Pasos</h3>
+    <ol>
+      <li>Conecta la placa (p. ej. una XIAO ESP32-S3) por USB.</li>
+      <li>Pulsa <strong>Connect</strong> y elige el puerto serie de la placa.</li>
+      <li>Pulsa <strong>Install</strong> y espera a que termine.</li>
+      <li>Si no aparece el puerto, mantén pulsado el botón <code>BOOT</code> de la placa mientras la conectas.</li>
+    </ol>
+
+    <div class="warn">
+      <strong>Versión experimental.</strong> Este binario lleva el enfocador en modo
+      <em>simulado</em> (no mueve un motor todavía). Sirve para probar que la placa
+      se graba y que el ASIAIR la reconoce como un EAF. Las versiones con el motor
+      real llegarán por aquí.
+    </div>
+
+    <footer>
+      Proyecto mantenido por <strong>Roberto Ferrando</strong>, a partir de
+      <a href="https://github.com/gmorain/zwo-eaf-proxy">zwo-eaf-proxy</a>
+      (licencia Apache-2.0). Código:
+      <a href="https://github.com/POP1PO/ZWO-EAF-Proxy">github.com/POP1PO/ZWO-EAF-Proxy</a>.
+      ZWO, ASIAIR y EAF son marcas de ZWO; este proyecto no está afiliado a ellos.
+    </footer>
+  </main>
+
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js"></script>
+</body>
+</html>
