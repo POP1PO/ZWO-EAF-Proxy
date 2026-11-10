@@ -81,8 +81,8 @@ menu "ZWO EAF persona"
             default 5
             help
                 Enter the pins by their board silkscreen label. The firmware
-                reorders them to the activation order IN1, IN3, IN2, IN4 that a
-                28BYJ-48 needs; wired in label order the motor only buzzes. Avoid
+                energises them in that same order, IN1, IN2, IN3, IN4, which is
+                what a 28BYJ-48 on a ULN2003 board needs. Avoid
                 the native-USB pins (GPIO19/20 on an ESP32-S3).
 
         config EAF_STEPPER_MAX_STEPS
@@ -96,11 +96,15 @@ menu "ZWO EAF persona"
 
         config EAF_STEPPER_RATE
             int "Rate ceiling, in half-steps per second"
-            default 1000
+            default 750
             help
-                1000 is about 15 rpm on a 28BYJ-48 and is HBG3's figure. A stall
-                is undetectable and loses position, so this is a real ceiling,
-                not advice.
+                750 is about 11 rpm on a 28BYJ-48. There is no acceleration ramp,
+                so the motor starts at this rate from standstill; the datasheet
+                only guarantees a no-load start above 600 Hz, and 1000 is its
+                running limit. A stall is undetectable and loses position, so
+                lower this if the focuser is stiff. The firmware emits at most
+                one half-step per FreeRTOS tick, so rates above the tick rate
+                (1000 Hz in sdkconfig.defaults) are not reached.
 
         config EAF_STEPPER_START
             int "Start position when NVS holds nothing yet, in half-steps"

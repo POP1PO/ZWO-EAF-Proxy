@@ -40,9 +40,13 @@ drive past them.
 
 - **Wiring.** Four GPIO to IN1..IN4. ULN2003 inputs are Darlington bases behind
   series resistors and switch from 3.3 V logic. Motor supply is 5 V.
-- **Phase order is IN1, IN3, IN2, IN4.** The middle two swap relative to the
-  silkscreen. Wired in silkscreen order the motor buzzes and does not turn. HBG3
-  passes exactly that order to AccelStepper's HALF4WIRE constructor.
+- **Phase order is the silkscreen order, IN1, IN2, IN3, IN4.** HBG3 passes
+  IN1, IN3, IN2, IN4 to AccelStepper's HALF4WIRE constructor, but that swap only
+  undoes AccelStepper's own interleaved table (pin1, pin1+pin3, pin3, ...); the
+  coils still fire IN1, IN1+IN2, IN2, ... This backend uses a plain sequential
+  table, so the pins stay in silkscreen order. IN1/IN3 and IN2/IN4 are opposite
+  halves of the same winding: energised as neighbours the motor only buzzes.
+  (Corrected in this fork; the original text asked for the swapped order.)
 - **Pin budget.** Four of the nine that remain after the console UART, alongside
   the DS18B20 and the zero button. See `docs/ARCHITECTURE.md`.
 - **Prior art.** HBG3 (https://github.com/Mraanderson/HBG3) emulates a Celestron
@@ -80,6 +84,8 @@ drive past them.
 - **Rate ceiling of 1000 half-steps per second**, which is HBG3's figure and
   about 15 rpm on this motor. Accelerate at roughly four times that. A stall is
   undetectable and costs position, so the cap is not advisory.
+  (This fork ships no acceleration ramp yet, so it defaults to 750 and starts at
+  that rate from standstill; see the Kconfig help.)
 - **Clamp every target to the configured travel.** A real ASIAIR was seen
   accepting a move to 17000 against a device rated 5760, and here an out-of-range
   target drives the mechanism into its end stop. This is a mechanical

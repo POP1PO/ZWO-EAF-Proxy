@@ -12,14 +12,20 @@ const char* kTag = "eaf.stepper";
 const char* kNvsNamespace = "eaf_focuser";
 const char* kNvsKey = "position";
 constexpr int64_t kDebounceUs = 30000;  // 30 ms, long enough to settle contacts
+// Keep the final phase energised this long before releasing the coils, so the
+// rotor completes the last half-step instead of being cut loose mid-way.
+constexpr int64_t kHoldUs = 20000;
 }  // namespace
 
 StepperFocuser::StepperFocuser(const StepperConfig& config)
     : config_(config),
       core_(config.start_position, config.max_travel),
-      // Activation order IN1, IN3, IN2, IN4: the middle two swap relative to the
-      // board silkscreen. StepperCore's table columns are in this same order.
-      pins_{config.in1_gpio, config.in3_gpio, config.in2_gpio, config.in4_gpio} {}
+      // Activation order is the silkscreen order IN1, IN2, IN3, IN4, matching
+      // the columns of StepperCore's table. IN1/IN3 and IN2/IN4 are opposite
+      // halves of the same winding, so they must never be adjacent phases. The
+      // IN1, IN3, IN2, IN4 order seen in Arduino sketches only compensates for
+      // AccelStepper's interleaved internal table and does not apply here.
+      pins_{config.in1_gpio, config.in2_gpio, config.in3_gpio, config.in4_gpio} {}
 
 bool StepperFocuser::begin() {
   uint64_t out_mask = 0;
@@ -103,17 +109,22 @@ void StepperFocuser::tick() {
   pollZeroButton();
 
   if (core_.isMoving()) {
-    const int32_t n = core_.due(elapsed, config_.rate_sps);
-    for (int32_t i = 0; i < n; ++i) {
+    // At most one half-step per call. If the loop ran late the backlog is
+    // dropped, so the move takes longer, rather than emitted back to back:
+    // the rotor cannot follow a burst and the count would silently diverge.
+    if (core_.due(elapsed, config_.rate_sps) > 0) {
       writePhase(core_.stepOnce());
+      last_step_us_ = now;
     }
     was_moving_ = true;
     return;
   }
 
-  // Idle. On the first tick after arrival, release the coils and save once: NVS
-  // is flash-backed with finite erase cycles, so never per step.
+  // Idle. Once the last phase has been held long enough for the rotor to settle,
+  // release the coils and save once: NVS is flash-backed with finite erase
+  // cycles, so never per step.
   if (was_moving_) {
+    if (now - last_step_us_ < kHoldUs) return;
     deEnergise();
     persist();
     was_moving_ = false;

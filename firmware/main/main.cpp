@@ -1,8 +1,8 @@
 // ZWO-EAF-Proxy firmware.
 //
 // Presents as a ZWO EAF: descriptors from captures/01-enumerate.pcap, register
-// behaviour from docs/protocol/registers.md. The focuser behind it is simulated
-// for now. See specs/features/001-eaf-persona-emulator.md.
+// behaviour from docs/protocol/registers.md. The focuser behind it is a build
+// choice (Kconfig.projbuild). See specs/features/001-eaf-persona-emulator.md.
 
 #include <string.h>
 
@@ -57,9 +57,6 @@ SimulatedFocuser focuser(CONFIG_EAF_START_POSITION, CONFIG_EAF_STEPS_PER_SECOND,
 // from this repository. Malformed configuration leaves the body zeroed.
 uint8_t serial[eaf::kBodySize] = {0};
 
-eaf::EafPersona persona(focuser, serial, CONFIG_EAF_TEMPERATURE_CENTI,
-                        CONFIG_EAF_FW_MAJOR, CONFIG_EAF_FW_MINOR, CONFIG_EAF_FW_PATCH);
-
 void LoadSerial() {
   const char* hex = CONFIG_EAF_SERIAL_HEX;
   for (size_t i = 0; i < 8 && hex[2 * i] && hex[2 * i + 1]; ++i) {
@@ -76,6 +73,14 @@ void LoadSerial() {
     serial[i] = static_cast<uint8_t>(value);
   }
 }
+
+// The persona copies the serial when it is constructed, and globals are
+// constructed in order, so the serial must be parsed here and not in app_main:
+// parsed later, register 0x0C answers all zeros.
+const bool serial_loaded = (LoadSerial(), true);
+
+eaf::EafPersona persona(focuser, serial, CONFIG_EAF_TEMPERATURE_CENTI,
+                        CONFIG_EAF_FW_MAJOR, CONFIG_EAF_FW_MINOR, CONFIG_EAF_FW_PATCH);
 
 }  // namespace
 
@@ -152,7 +157,7 @@ extern "C" void app_main(void) {
       .vbus_monitor_io = -1,
   };
 
-  LoadSerial();
+  (void)serial_loaded;
   if (!focuser.begin()) {
     ESP_LOGE(kTag, "focuser begin() failed; presenting anyway");
   }
@@ -160,12 +165,17 @@ extern "C" void app_main(void) {
   ESP_LOGI(kTag, "presenting as ZWO EAF");
 
 #if CONFIG_EAF_BACKEND_STEPPER || CONFIG_EAF_BACKEND_GEMINI_USBH
-  // Hardware backends drive their own state machine inside tick(). A short delay
-  // keeps the stepper's rate honest (one half-step falls due about every
-  // millisecond at the ceiling). USB is serviced by TinyUSB's own task.
+  // Hardware backends drive their own state machine inside tick(), which emits
+  // at most one half-step per call, so this loop must come round once a
+  // millisecond: sdkconfig.defaults sets CONFIG_FREERTOS_HZ=1000 for that. The
+  // delay is never allowed to be zero ticks: at the stock 100 Hz tick
+  // pdMS_TO_TICKS(1) is 0, a bare yield that starves the idle task and trips the
+  // task watchdog. With a 100 Hz tick the motor still counts correctly, only at
+  // 100 half-steps a second. USB is serviced by TinyUSB's own task.
+  const TickType_t tick_delay = pdMS_TO_TICKS(1) > 0 ? pdMS_TO_TICKS(1) : 1;
   while (true) {
     focuser.tick();
-    vTaskDelay(pdMS_TO_TICKS(1));
+    vTaskDelay(tick_delay);
   }
 #else
   // Integrate against the real clock. pdMS_TO_TICKS of anything under one

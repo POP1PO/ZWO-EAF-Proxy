@@ -50,11 +50,11 @@ En `menuconfig`, entra en **"ZWO EAF persona"**:
 2. Entra en **"Direct stepper backend"** y ajusta:
    - **GPIO IN1..IN4**: por defecto 2, 3, 4, 5. En la XIAO S3 esos son los pads
      **D1, D2, D3, D4** (ver cableado abajo). Mételos por su etiqueta de la placa
-     ULN2003; el firmware ya los reordena a la secuencia correcta.
+     ULN2003; el firmware las activa en ese mismo orden (IN1, IN2, IN3, IN4).
    - **Travel (half-steps)**: el recorrido de tu enfocador en pasos. Por defecto
      60000. Ponlo al recorrido real para no estrellar el motor contra el final.
-   - **Rate**: velocidad máxima en medios pasos/segundo (1000 por defecto, ~15
-     rpm; no subas sin motivo).
+   - **Rate**: velocidad en medios pasos/segundo (750 por defecto, ~11 rpm). No
+     hay rampa de aceleración: si el motor se cala o pierde pasos, bájala.
    - **Invert direction**: actívalo solo si, al probar, el motor gira al revés.
    - **Zero button GPIO**: -1 (desactivado) salvo que pongas un botón de cero.
 
@@ -98,8 +98,8 @@ Ctrl+].)
 
 - El **motor 28BYJ-48** se enchufa en su conector blanco de la placa ULN2003.
 - **GND común** entre la XIAO y la ULN2003 es obligatorio.
-- Si el motor **solo zumba y no gira**, suele ser masa común o falta de 5 V, no
-  el orden de fases (el firmware ya lo corrige).
+- Si el motor **solo zumba y no gira**, revisa masa común, los 5 V y que IN1..IN4
+  vayan a los pines configurados en ese orden; si todo está bien, baja "Rate".
 - Si gira **en sentido contrario** al que quieres, activa "Invert direction" en
   `menuconfig` o cambia el conector del motor.
 

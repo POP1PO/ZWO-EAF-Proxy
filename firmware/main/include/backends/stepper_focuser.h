@@ -10,9 +10,8 @@
 #include "backends/stepper_core.h"
 #include "focuser.h"
 
-// Phase order is the silkscreen labels in ACTIVATION order IN1, IN3, IN2, IN4;
-// the caller passes the four pins by their board label and the constructor
-// reorders them. invert swaps which table direction is "outward" when the motor
+// The caller passes the four pins by their board label; activation order is the
+// silkscreen order IN1, IN2, IN3, IN4. invert swaps which table direction is "outward" when the motor
 // is wired or geared the other way. zero_gpio < 0 disables the button.
 struct StepperConfig {
   int in1_gpio;
@@ -54,8 +53,9 @@ class StepperFocuser : public Focuser {
 
   StepperConfig config_;
   stepper::StepperCore core_;
-  int pins_[4];          // activation order: {IN1, IN3, IN2, IN4}
+  int pins_[4];          // activation order: {IN1, IN2, IN3, IN4}
   int64_t last_us_ = 0;
+  int64_t last_step_us_ = 0;  // when the most recent half-step was written
   bool was_moving_ = false;
   bool button_down_ = false;
   int64_t button_changed_us_ = 0;

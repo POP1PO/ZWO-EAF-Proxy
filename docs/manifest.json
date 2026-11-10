@@ -1,6 +1,6 @@
 {
   "name": "ZWO EAF Proxy",
-  "version": "0.1.0-sim",
+  "version": "0.1.0-stepper",
   "new_install_prompt_erase": true,
   "builds": [
     {

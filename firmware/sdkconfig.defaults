@@ -17,3 +17,8 @@ CONFIG_ESP_CONSOLE_UART_DEFAULT=y
 # sdkconfig.defaults is only read when sdkconfig does not exist. After editing
 # this file, delete sdkconfig and rebuild, or the change is silently ignored.
 CONFIG_TINYUSB_HID_COUNT=1
+
+# The stepper backend emits one half-step per pass of the main loop, and the
+# loop sleeps one tick. At the stock 100 Hz the motor would crawl at 100
+# half-steps a second; 1000 Hz gives the loop its 1 ms period.
+CONFIG_FREERTOS_HZ=1000

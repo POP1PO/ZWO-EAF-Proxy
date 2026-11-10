@@ -18,10 +18,10 @@ struct Coils {
 };
 
 // Eight-phase half-step sequence for a 28BYJ-48, the canonical order that turns
-// it smoothly. Columns are coils A, B, C, D in activation order. On this board
-// that activation order is the silkscreen labels IN1, IN3, IN2, IN4 — the middle
-// two swap — which is exactly what HBG3 passes to AccelStepper's HALF4WIRE
-// constructor. Wired in silkscreen order instead, the motor only buzzes.
+// it smoothly. Columns are coils A, B, C, D in activation order, which on a
+// ULN2003 board is the silkscreen order IN1, IN2, IN3, IN4 (blue, pink, yellow,
+// orange). A and C are the two halves of one winding, B and D of the other, so
+// only neighbours in this order are ever energised together.
 //
 //   phase : A B C D
 //     0     1 0 0 0

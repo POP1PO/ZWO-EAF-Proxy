@@ -10,6 +10,7 @@ dist/
 # ESP-IDF build artefacts. sdkconfig is generated from sdkconfig.defaults;
 # keeping it out means the target and options come from the tracked defaults.
 firmware/build/
+firmware/zwoproxy-merged.bin
 firmware/sdkconfig
 firmware/sdkconfig.old
 firmware/managed_components/
