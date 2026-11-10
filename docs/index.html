@@ -1,9 +1,18 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ZWO EAF Proxy — Instalador</title>
+  <title>ZWO EAF Proxy — Installer</title>
+  <script>
+    // Set language before the body renders to avoid a flash of both languages.
+    try {
+      var l = localStorage.getItem('zwoproxy-lang')
+        || ((navigator.language || '').slice(0, 2) === 'en' ? 'en' : 'es');
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.setAttribute('lang', l);
+    } catch (e) {}
+  </script>
   <style>
     :root {
       --bg: #0e1726;
@@ -35,6 +44,23 @@
       border-radius: 16px;
       padding: 28px;
     }
+    .langbar { display: flex; justify-content: flex-end; gap: 4px; margin: -4px 0 12px; }
+    .langbar button {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 12px;
+      font: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .langbar button[aria-pressed="true"] {
+      background: var(--accent);
+      color: #0b1422;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
     h1 { font-size: 1.5rem; margin: 0 0 4px; }
     .sub { color: var(--muted); margin: 0 0 20px; }
     .install { text-align: center; margin: 24px 0; }
@@ -59,50 +85,107 @@
       font-size: 0.82rem;
     }
     a { color: var(--accent); }
+    /* Language switching */
+    [data-lang="es"] .lang-en { display: none; }
+    [data-lang="en"] .lang-es { display: none; }
   </style>
 </head>
 <body>
   <main class="card">
+    <div class="langbar">
+      <button type="button" data-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+
     <h1>ZWO EAF Proxy</h1>
-    <p class="sub">Graba el firmware en tu placa ESP32-S3 desde el navegador, sin instalar nada.</p>
+    <p class="sub lang-es">Graba el firmware en tu placa ESP32-S3 desde el navegador, sin instalar nada.</p>
+    <p class="sub lang-en">Flash the firmware to your ESP32-S3 board from the browser — nothing to install.</p>
 
     <div class="install">
       <esp-web-install-button manifest="./manifest.json">
         <span slot="unsupported">
-          Tu navegador no permite grabar por USB. Abre esta página en
-          <strong>Chrome</strong> o <strong>Edge</strong> en un ordenador.
+          <span class="lang-es">Tu navegador no permite grabar por USB. Abre esta página en
+            <strong>Chrome</strong> o <strong>Edge</strong> en un ordenador.</span>
+          <span class="lang-en">Your browser can't flash over USB. Open this page in
+            <strong>Chrome</strong> or <strong>Edge</strong> on a computer.</span>
         </span>
         <span slot="not-allowed">
-          Acceso al puerto denegado. Conecta la placa y vuelve a intentarlo.
+          <span class="lang-es">Acceso al puerto denegado. Conecta la placa y vuelve a intentarlo.</span>
+          <span class="lang-en">Port access denied. Connect the board and try again.</span>
         </span>
       </esp-web-install-button>
     </div>
 
-    <p class="req">Necesitas <strong>Chrome</strong> o <strong>Edge</strong> en un ordenador (no funciona en Firefox, Safari ni en el móvil).</p>
+    <p class="req lang-es">Necesitas <strong>Chrome</strong> o <strong>Edge</strong> en un ordenador (no funciona en Firefox, Safari ni en el móvil).</p>
+    <p class="req lang-en">You need <strong>Chrome</strong> or <strong>Edge</strong> on a computer (it won't work in Firefox, Safari or on mobile).</p>
 
-    <h3>Pasos</h3>
-    <ol>
+    <h3 class="lang-es">Pasos</h3>
+    <ol class="lang-es">
       <li>Conecta la placa (p. ej. una XIAO ESP32-S3) por USB.</li>
       <li>Pulsa <strong>Connect</strong> y elige el puerto serie de la placa.</li>
       <li>Pulsa <strong>Install</strong> y espera a que termine.</li>
       <li>Si no aparece el puerto, mantén pulsado el botón <code>BOOT</code> de la placa mientras la conectas.</li>
     </ol>
 
-    <div class="warn">
+    <h3 class="lang-en">Steps</h3>
+    <ol class="lang-en">
+      <li>Plug the board (e.g. a XIAO ESP32-S3) in over USB.</li>
+      <li>Click <strong>Connect</strong> and pick the board's serial port.</li>
+      <li>Click <strong>Install</strong> and wait for it to finish.</li>
+      <li>If the port doesn't show up, hold the board's <code>BOOT</code> button while you plug it in.</li>
+    </ol>
+
+    <div class="warn lang-es">
       <strong>Versión experimental.</strong> Este binario lleva un motor real
       (28BYJ-48 por ULN2003, pines D1 a D4 de la XIAO), pero aún no se ha validado
       en hardware. Si todo va bien moverá tu enfocador, pero considera esta versión
       un prototipo hasta que se pruebe a fondo.
     </div>
+    <div class="warn lang-en">
+      <strong>Experimental build.</strong> This binary drives a real motor
+      (a 28BYJ-48 via a ULN2003, pins D1 to D4 on the XIAO), but it hasn't been
+      validated on hardware yet. It should move your focuser, but treat this
+      version as a prototype until it's been tested thoroughly.
+    </div>
 
     <footer>
-      Proyecto mantenido por <strong>Roberto Ferrando</strong>, a partir de
-      <a href="https://github.com/gmorain/zwo-eaf-proxy">zwo-eaf-proxy</a>
-      (licencia Apache-2.0). Código:
-      <a href="https://github.com/POP1PO/ZWO-EAF-Proxy">github.com/POP1PO/ZWO-EAF-Proxy</a>.
-      ZWO, ASIAIR y EAF son marcas de ZWO; este proyecto no está afiliado a ellos.
+      <span class="lang-es">
+        Proyecto mantenido por <strong>Roberto Ferrando</strong>, a partir de
+        <a href="https://github.com/gmorain/zwo-eaf-proxy">zwo-eaf-proxy</a>
+        (licencia Apache-2.0). Código:
+        <a href="https://github.com/POP1PO/ZWO-EAF-Proxy">github.com/POP1PO/ZWO-EAF-Proxy</a>.
+        ZWO, ASIAIR y EAF son marcas de ZWO; este proyecto no está afiliado a ellos.
+      </span>
+      <span class="lang-en">
+        Maintained by <strong>Roberto Ferrando</strong>, based on
+        <a href="https://github.com/gmorain/zwo-eaf-proxy">zwo-eaf-proxy</a>
+        (Apache-2.0 licence). Source:
+        <a href="https://github.com/POP1PO/ZWO-EAF-Proxy">github.com/POP1PO/ZWO-EAF-Proxy</a>.
+        ZWO, ASIAIR and EAF are trademarks of ZWO; this project is not affiliated with them.
+      </span>
     </footer>
   </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      function setLang(l) {
+        root.setAttribute('data-lang', l);
+        root.setAttribute('lang', l);
+        var btns = document.querySelectorAll('.langbar button');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-lang') === l ? 'true' : 'false');
+        }
+        try { localStorage.setItem('zwoproxy-lang', l); } catch (e) {}
+      }
+      // Sync the buttons with whatever the head script already chose.
+      setLang(root.getAttribute('data-lang') || 'es');
+      document.querySelector('.langbar').addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-lang]');
+        if (b) setLang(b.getAttribute('data-lang'));
+      });
+    })();
+  </script>
 
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js"></script>
 </body>
